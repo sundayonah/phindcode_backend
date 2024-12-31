@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/sundayonah/phindcode_backend/internal/config"
 	"github.com/sundayonah/phindcode_backend/internal/handlers"
 	"github.com/sundayonah/phindcode_backend/internal/service"
@@ -15,14 +14,14 @@ import (
 func main() {
 
 	// Create config
-	cfg := config.NewConfig()
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+	client, err := config.NewConfig()
+	if err != nil {
+		log.Fatalf("failed to create config: %v", err)
 	}
 
-	defer cfg.CloseDB()
+	defer config.CloseDB()
 
-	svc := service.NewPostService(cfg.Client)
+	svc := service.NewPostService(client)
 	handler := handlers.NewPostHandler(svc)
 
 	r := gin.Default()
