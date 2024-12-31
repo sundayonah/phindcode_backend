@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/sundayonah/phindcode_backend/ent"
 
 	_ "github.com/lib/pq"
@@ -38,8 +39,10 @@ func NewConfig() (*ent.Client, error) {
 	return client, nil
 }
 
+func LoadEnv() error {
+	return godotenv.Load()
+}
+
 func CloseDB() {
 	Client.Close()
 }
-
-

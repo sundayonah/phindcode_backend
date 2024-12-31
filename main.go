@@ -12,6 +12,10 @@ import (
 )
 
 func main() {
+	// load environment variables
+	if err := config.LoadEnv(); err != nil {
+		log.Fatalf("failed to load environment variables: %v", err)
+	}
 
 	// Create config
 	client, err := config.NewConfig()
