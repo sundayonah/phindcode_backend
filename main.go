@@ -14,13 +14,12 @@ import (
 
 func main() {
 
-	// Load environment variables
+	// Create config
+	cfg := config.NewConfig()
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Create config
-	cfg := config.NewConfig()
 	defer cfg.CloseDB()
 
 	svc := service.NewPostService(cfg.Client)
