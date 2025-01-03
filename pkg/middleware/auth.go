@@ -16,31 +16,45 @@ var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 // AuthMiddleware checks the Authorization header for a valid JWT token
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Extract token from Authorization header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is missing"})
 			c.Abort()
 			return
 		}
 
-		// Split the Bearer token from the header
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+		// Extract Bearer token
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenString == authHeader {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Bearer token is missing"})
 			c.Abort()
 			return
 		}
 
-		// Validate the token
-		claims, err := validateToken(parts[1])
-		if err != nil {
+		// Parse and validate the token
+		secretKey := os.Getenv("JWT_SECRET")
+		if secretKey == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "JWT secret key is not set"})
+			c.Abort()
+			return
+		}
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Validate the signing method
+			if token.Method != jwt.SigningMethodHS256 {
+				return nil, errors.New("unexpected signing method")
+			}
+			return []byte(secretKey), nil
+		})
+
+		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
 			c.Abort()
 			return
 		}
 
-		// Pass the user information to the context (can be used by the route handlers)
-		c.Set("user", claims)
+		// Token is valid, allow the request to proceed
 		c.Next()
 	}
 }
