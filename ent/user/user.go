@@ -21,8 +21,8 @@ const (
 	FieldPassword = "password"
 	// FieldToken holds the string denoting the token field in the database.
 	FieldToken = "token"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
+	// FieldFullName holds the string denoting the full_name field in the database.
+	FieldFullName = "full_name"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -38,7 +38,7 @@ var Columns = []string{
 	FieldGoogleID,
 	FieldPassword,
 	FieldToken,
-	FieldName,
+	FieldFullName,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -92,9 +92,9 @@ func ByToken(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldToken, opts...).ToFunc()
 }
 
-// ByName orders the results by the name field.
-func ByName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldName, opts...).ToFunc()
+// ByFullName orders the results by the full_name field.
+func ByFullName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFullName, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

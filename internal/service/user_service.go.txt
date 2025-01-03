@@ -1,0 +1,33 @@
+package service
+
+import (
+	"context"
+	"log"
+
+	"github.com/sundayonah/phindcode_backend/ent"
+)
+
+type UserService struct {
+	client *ent.Client
+}
+
+func NewUserService(client *ent.Client) *UserService {
+	return &UserService{client: client}
+}
+
+// FetchAllUsers fetches all users from the database
+func (us *UserService) FetchAllUsers(ctx context.Context) ([]*ent.User, error) {
+	// Query all users
+	users, err := us.client.User.Query().All(ctx)
+	if err != nil {
+		log.Printf("Failed querying users: %v", err)
+		return nil, err
+	}
+
+	// Debugging: Print users to the console (optional)
+	for _, user := range users {
+		log.Printf("ID: %d, Email: %s, Name: %s", user.ID, user.Email, user.Name)
+	}
+
+	return users, nil
+}

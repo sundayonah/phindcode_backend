@@ -102,23 +102,23 @@ func (uu *UserUpdate) ClearToken() *UserUpdate {
 	return uu
 }
 
-// SetName sets the "name" field.
-func (uu *UserUpdate) SetName(s string) *UserUpdate {
-	uu.mutation.SetName(s)
+// SetFullName sets the "full_name" field.
+func (uu *UserUpdate) SetFullName(s string) *UserUpdate {
+	uu.mutation.SetFullName(s)
 	return uu
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableName(s *string) *UserUpdate {
+// SetNillableFullName sets the "full_name" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableFullName(s *string) *UserUpdate {
 	if s != nil {
-		uu.SetName(*s)
+		uu.SetFullName(*s)
 	}
 	return uu
 }
 
-// ClearName clears the value of the "name" field.
-func (uu *UserUpdate) ClearName() *UserUpdate {
-	uu.mutation.ClearName()
+// ClearFullName clears the value of the "full_name" field.
+func (uu *UserUpdate) ClearFullName() *UserUpdate {
+	uu.mutation.ClearFullName()
 	return uu
 }
 
@@ -212,11 +212,11 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if uu.mutation.TokenCleared() {
 		_spec.ClearField(user.FieldToken, field.TypeString)
 	}
-	if value, ok := uu.mutation.Name(); ok {
-		_spec.SetField(user.FieldName, field.TypeString, value)
+	if value, ok := uu.mutation.FullName(); ok {
+		_spec.SetField(user.FieldFullName, field.TypeString, value)
 	}
-	if uu.mutation.NameCleared() {
-		_spec.ClearField(user.FieldName, field.TypeString)
+	if uu.mutation.FullNameCleared() {
+		_spec.ClearField(user.FieldFullName, field.TypeString)
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -315,23 +315,23 @@ func (uuo *UserUpdateOne) ClearToken() *UserUpdateOne {
 	return uuo
 }
 
-// SetName sets the "name" field.
-func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
-	uuo.mutation.SetName(s)
+// SetFullName sets the "full_name" field.
+func (uuo *UserUpdateOne) SetFullName(s string) *UserUpdateOne {
+	uuo.mutation.SetFullName(s)
 	return uuo
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableName(s *string) *UserUpdateOne {
+// SetNillableFullName sets the "full_name" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableFullName(s *string) *UserUpdateOne {
 	if s != nil {
-		uuo.SetName(*s)
+		uuo.SetFullName(*s)
 	}
 	return uuo
 }
 
-// ClearName clears the value of the "name" field.
-func (uuo *UserUpdateOne) ClearName() *UserUpdateOne {
-	uuo.mutation.ClearName()
+// ClearFullName clears the value of the "full_name" field.
+func (uuo *UserUpdateOne) ClearFullName() *UserUpdateOne {
+	uuo.mutation.ClearFullName()
 	return uuo
 }
 
@@ -455,11 +455,11 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if uuo.mutation.TokenCleared() {
 		_spec.ClearField(user.FieldToken, field.TypeString)
 	}
-	if value, ok := uuo.mutation.Name(); ok {
-		_spec.SetField(user.FieldName, field.TypeString, value)
+	if value, ok := uuo.mutation.FullName(); ok {
+		_spec.SetField(user.FieldFullName, field.TypeString, value)
 	}
-	if uuo.mutation.NameCleared() {
-		_spec.ClearField(user.FieldName, field.TypeString)
+	if uuo.mutation.FullNameCleared() {
+		_spec.ClearField(user.FieldFullName, field.TypeString)
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

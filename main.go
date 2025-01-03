@@ -46,8 +46,9 @@ func main() {
 	v1 := r.Group("/api/v1")
 	{
 		// Register the /login route for user login
-		v1.POST("/register", authHandler.Register)
+		v1.GET("/users", authHandler.GetAllUsers)
 		v1.POST("/login", authHandler.LogIn)
+		v1.POST("/register", authHandler.Register)
 
 		// Apply middleware to other routes
 		authorized := v1.Group("/")

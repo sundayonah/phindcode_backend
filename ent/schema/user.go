@@ -25,7 +25,7 @@ func (User) Fields() []ent.Field {
 			Optional(),
 		field.String("token").
 			Optional(),
-		field.String("name").
+		field.String("full_name").
 			Optional(),
 		field.Time("created_at").
 			Default(time.Now).

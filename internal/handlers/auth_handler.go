@@ -1,158 +1,8 @@
-// package handlers
-
-// import (
-// 	"errors"
-// 	"net/http"
-// 	"os"
-// 	"strconv"
-// 	"time"
-
-// 	"github.com/gin-gonic/gin"
-// 	"github.com/golang-jwt/jwt/v4"
-// 	"github.com/sundayonah/phindcode_backend/internal/service"
-// 	"golang.org/x/crypto/bcrypt"
-// 	"google.golang.org/api/idtoken"
-// )
-
-// // SignInRequest defines the login request structure
-// type SignInRequest struct {
-// 	Email    string `json:"email"`
-// 	Password string `json:"password,omitempty"`
-// 	Token    string `json:"token,omitempty"`
-// 	Method   string `json:"method"`
-// }
-
-// type AuthHandler struct {
-// 	svc service.AuthService
-// }
-
-// func NewAuthHandler(svc service.AuthService) *AuthHandler {
-// 	return &AuthHandler{svc: svc}
-// }
-
-// // LogIn handles user login for both email/password and Google login
-// func (h *AuthHandler) LogIn(c *gin.Context) {
-// 	var req SignInRequest
-// 	if err := c.ShouldBindJSON(&req); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-// 		return
-// 	}
-
-// 	switch req.Method {
-// 	case "email":
-// 		token, err := h.handleEmailLogin(c, req.Email, req.Password)
-// 		if err != nil {
-// 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 		c.JSON(http.StatusOK, gin.H{"token": token})
-
-// 	case "google":
-// 		token, err := h.handleGoogleLogin(c, req.Token)
-// 		if err != nil {
-// 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 		c.JSON(http.StatusOK, gin.H{"token": token})
-
-// 	default:
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid login method"})
-// 	}
-// }
-
-// // handleEmailLogin validates the user's credentials and generates a JWT token
-// func (h *AuthHandler) handleEmailLogin(c *gin.Context, email, password string) (string, error) {
-// 	user, err := h.svc.GetUserByEmail(c.Request.Context(), email) // Use AuthService
-// 	if err != nil {
-// 		if err.Error() == "user not found" {
-// 			return "", errors.New("invalid email or password")
-// 		}
-// 		return "", err
-// 	}
-
-// 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-// 		return "", errors.New("invalid email or password")
-// 	}
-
-// 	userIDStr := strconv.Itoa(user.ID)
-
-// 	return generateToken(user.Email, userIDStr)
-// }
-
-// // handleGoogleLogin validates the Google login token and generates a JWT token
-// func (h *AuthHandler) handleGoogleLogin(c *gin.Context, token string) (string, error) {
-// 	// Verify the Google token using gin.Context
-// 	payload, err := verifyGoogleToken(c, token)
-// 	if err != nil {
-// 		return "", errors.New("invalid Google token")
-// 	}
-
-// 	// Extract email and name from the token's claims
-// 	email, ok := payload.Claims["email"].(string)
-// 	if !ok {
-// 		return "", errors.New("invalid email in token payload")
-// 	}
-
-// 	name, ok := payload.Claims["name"].(string)
-// 	if !ok {
-// 		return "", errors.New("invalid name in token payload")
-// 	}
-
-// 	// Check if the Google user exists in the database
-// 	user, err := h.svc.GetUserByEmail(c.Request.Context(), email)
-// 	if err != nil {
-// 		if err.Error() == "user not found" {
-// 			// Register new user if not found
-// 			user, err = h.svc.CreateUser(c.Request.Context(), email, name, "")
-// 			if err != nil {
-// 				return "", err
-// 			}
-// 		} else {
-// 			return "", err
-// 		}
-// 	}
-
-// 	userIDStr := strconv.Itoa(user.ID)
-
-// 	return generateToken(user.Email, userIDStr)
-// }
-
-// // generateToken generates a JWT token for the user
-// func generateToken(email, userID string) (string, error) {
-// 	secretKey := os.Getenv("JWT_SECRET")
-// 	if secretKey == "" {
-// 		return "", errors.New("JWT secret key is not set")
-// 	}
-
-// 	claims := jwt.MapClaims{
-// 		"email":  email,
-// 		"userID": userID,
-// 		"exp":    time.Now().Add(24 * time.Hour).Unix(),
-// 	}
-
-// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-// 	return token.SignedString([]byte(secretKey))
-// }
-
-// // verifyGoogleToken verifies the Google ID token
-// func verifyGoogleToken(c *gin.Context, token string) (*idtoken.Payload, error) {
-// 	ctx := c.Request.Context()
-// 	audience := os.Getenv("CLIENT_ID")
-// 	if audience == "" {
-// 		return nil, errors.New("CLIENT_ID environment variable is not set")
-// 	}
-
-// 	payload, err := idtoken.Validate(ctx, token, audience)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return payload, nil
-// }
-
 package handlers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -171,6 +21,7 @@ type SignInRequest struct {
 	Password string `json:"password,omitempty"`
 	Token    string `json:"token,omitempty"`
 	Method   string `json:"method"`
+	Name     string `json:"name,omitempty"`
 }
 
 type AuthHandler struct {
@@ -191,12 +42,12 @@ func (h *AuthHandler) LogIn(c *gin.Context) {
 
 	switch req.Method {
 	case "email":
-		token, err := h.handleEmailLogin(c, req.Email, req.Password)
+		token, name, err := h.handleEmailLogin(c, req.Email, req.Password)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"token": token})
+		c.JSON(http.StatusOK, gin.H{"token": token, "name": name})
 
 	case "google":
 		token, err := h.handleGoogleLogin(c, req.Token)
@@ -221,12 +72,17 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	switch req.Method {
 	case "email":
-		token, err := h.handleEmailRegistration(c, req.Email, req.Password)
+		// If name is not provided, set a default or leave it empty
+		if req.Name == "" {
+			req.Name = "Default Name" // You can modify this to something else
+		}
+
+		token, err := h.handleEmailRegistration(c, req.Email, req.Password, req.Name)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"token": token})
+		c.JSON(http.StatusOK, gin.H{"token": token, "name": req.Name})
 
 	case "google":
 		token, err := h.handleGoogleRegistration(c, req.Token)
@@ -242,22 +98,27 @@ func (h *AuthHandler) Register(c *gin.Context) {
 }
 
 // handleEmailLogin validates the user's credentials and generates a JWT token
-func (h *AuthHandler) handleEmailLogin(c *gin.Context, email, password string) (string, error) {
+func (h *AuthHandler) handleEmailLogin(c *gin.Context, email, password string) (string, string, error) {
 	user, err := h.svc.GetUserByEmail(c.Request.Context(), email) // Use AuthService
 	if err != nil {
 		if err.Error() == "user not found" {
-			return "", errors.New("invalid email or password")
+			return "", "", errors.New("invalid email or password")
 		}
-		return "", err
+		return "", "", err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return "", errors.New("invalid email or password")
+		return "", "", errors.New("invalid email or password")
 	}
 
 	userIDStr := strconv.Itoa(user.ID)
 
-	return generateToken(user.Email, userIDStr)
+	token, err := generateToken(user.Email, userIDStr)
+	if err != nil {
+		return "", "", err
+	}
+
+	return token, user.FullName, nil
 }
 
 // handleGoogleLogin validates the Google login token and generates a JWT token
@@ -274,7 +135,7 @@ func (h *AuthHandler) handleGoogleLogin(c *gin.Context, token string) (string, e
 		return "", errors.New("invalid email in token payload")
 	}
 
-	name, ok := payload.Claims["name"].(string)
+	name, ok := payload.Claims["name"].(string) // Extract name from the token
 	if !ok {
 		return "", errors.New("invalid name in token payload")
 	}
@@ -284,7 +145,7 @@ func (h *AuthHandler) handleGoogleLogin(c *gin.Context, token string) (string, e
 	if err != nil {
 		if err.Error() == "user not found" {
 			// Register new user if not found
-			user, err = h.svc.CreateUser(c.Request.Context(), email, name, "")
+			user, err = h.svc.CreateUser(c.Request.Context(), email, name, "") // Create with extracted name
 			if err != nil {
 				return "", err
 			}
@@ -299,7 +160,7 @@ func (h *AuthHandler) handleGoogleLogin(c *gin.Context, token string) (string, e
 }
 
 // handleEmailRegistration registers a new user with email and password and generates a JWT token
-func (h *AuthHandler) handleEmailRegistration(c *gin.Context, email, password string) (string, error) {
+func (h *AuthHandler) handleEmailRegistration(c *gin.Context, email, password, name string) (string, error) {
 	// Check if user already exists
 	_, err := h.svc.GetUserByEmail(c.Request.Context(), email)
 	if err == nil {
@@ -312,8 +173,8 @@ func (h *AuthHandler) handleEmailRegistration(c *gin.Context, email, password st
 		return "", err
 	}
 
-	// Create a new user in the database
-	user, err := h.svc.CreateUser(c.Request.Context(), email, "", string(hashedPassword))
+	// Create a new user in the database with the name
+	user, err := h.svc.CreateUser(c.Request.Context(), email, name, string(hashedPassword))
 	if err != nil {
 		return "", err
 	}
@@ -389,4 +250,26 @@ func verifyGoogleToken(c *gin.Context, token string) (*idtoken.Payload, error) {
 		return nil, err
 	}
 	return payload, nil
+}
+
+func (h *AuthHandler) GetAllUsers(c *gin.Context) {
+	log.Println("GetAllUsers handler invoked") // Debug log
+	users, err := h.svc.FetchAllUsers(c.Request.Context())
+	if err != nil {
+		log.Printf("Error fetching users: %v", err) // Log the error
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		return
+	}
+
+	// Convert to response format
+	response := []gin.H{}
+	for _, user := range users {
+		response = append(response, gin.H{
+			"id":    user.ID,
+			"email": user.Email,
+			"name":  user.FullName,
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
 }
