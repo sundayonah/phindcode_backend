@@ -122,6 +122,20 @@ func (uu *UserUpdate) ClearFullName() *UserUpdate {
 	return uu
 }
 
+// SetIsAdmin sets the "is_admin" field.
+func (uu *UserUpdate) SetIsAdmin(b bool) *UserUpdate {
+	uu.mutation.SetIsAdmin(b)
+	return uu
+}
+
+// SetNillableIsAdmin sets the "is_admin" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableIsAdmin(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetIsAdmin(*b)
+	}
+	return uu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
 	uu.mutation.SetUpdatedAt(t)
@@ -217,6 +231,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.FullNameCleared() {
 		_spec.ClearField(user.FieldFullName, field.TypeString)
+	}
+	if value, ok := uu.mutation.IsAdmin(); ok {
+		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -332,6 +349,20 @@ func (uuo *UserUpdateOne) SetNillableFullName(s *string) *UserUpdateOne {
 // ClearFullName clears the value of the "full_name" field.
 func (uuo *UserUpdateOne) ClearFullName() *UserUpdateOne {
 	uuo.mutation.ClearFullName()
+	return uuo
+}
+
+// SetIsAdmin sets the "is_admin" field.
+func (uuo *UserUpdateOne) SetIsAdmin(b bool) *UserUpdateOne {
+	uuo.mutation.SetIsAdmin(b)
+	return uuo
+}
+
+// SetNillableIsAdmin sets the "is_admin" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableIsAdmin(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetIsAdmin(*b)
+	}
 	return uuo
 }
 
@@ -460,6 +491,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.FullNameCleared() {
 		_spec.ClearField(user.FieldFullName, field.TypeString)
+	}
+	if value, ok := uuo.mutation.IsAdmin(); ok {
+		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

@@ -27,6 +27,8 @@ type User struct {
 	Token string `json:"token,omitempty"`
 	// FullName holds the value of the "full_name" field.
 	FullName string `json:"full_name,omitempty"`
+	// IsAdmin holds the value of the "is_admin" field.
+	IsAdmin bool `json:"is_admin,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -39,6 +41,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldIsAdmin:
+			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
 		case user.FieldEmail, user.FieldGoogleID, user.FieldPassword, user.FieldToken, user.FieldFullName:
@@ -95,6 +99,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field full_name", values[i])
 			} else if value.Valid {
 				u.FullName = value.String
+			}
+		case user.FieldIsAdmin:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_admin", values[i])
+			} else if value.Valid {
+				u.IsAdmin = value.Bool
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -158,6 +168,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("full_name=")
 	builder.WriteString(u.FullName)
+	builder.WriteString(", ")
+	builder.WriteString("is_admin=")
+	builder.WriteString(fmt.Sprintf("%v", u.IsAdmin))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))

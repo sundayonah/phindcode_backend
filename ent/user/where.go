@@ -79,6 +79,11 @@ func FullName(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldFullName, v))
 }
 
+// IsAdmin applies equality check predicate on the "is_admin" field. It's identical to IsAdminEQ.
+func IsAdmin(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsAdmin, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
@@ -452,6 +457,16 @@ func FullNameEqualFold(v string) predicate.User {
 // FullNameContainsFold applies the ContainsFold predicate on the "full_name" field.
 func FullNameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldFullName, v))
+}
+
+// IsAdminEQ applies the EQ predicate on the "is_admin" field.
+func IsAdminEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsAdmin, v))
+}
+
+// IsAdminNEQ applies the NEQ predicate on the "is_admin" field.
+func IsAdminNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsAdmin, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

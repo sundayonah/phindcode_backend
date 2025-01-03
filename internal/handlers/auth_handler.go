@@ -220,6 +220,56 @@ func (h *AuthHandler) handleGoogleRegistration(c *gin.Context, token string) (st
 	return generateToken(user.Email, userIDStr)
 }
 
+func (h *AuthHandler) CreateAdmin(c *gin.Context) {
+	var req SignInRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	// Check if user already exists
+	_, err := h.svc.GetUserByEmail(c.Request.Context(), req.Email)
+	if err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
+		return
+	}
+
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	// Create admin user using the service
+	user, err := h.svc.CreateAdminUser(
+		c.Request.Context(),
+		req.Email,
+		req.Name,
+		string(hashedPassword),
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create admin user"})
+		return
+	}
+
+	// Generate JWT token
+	token, err := generateToken(user.Email, strconv.Itoa(user.ID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+		"user": gin.H{
+			"id":    user.ID,
+			"email": user.Email,
+			"name":  user.FullName,
+		},
+	})
+}
+
 // generateToken generates a JWT token for the user
 func generateToken(email, userID string) (string, error) {
 	secretKey := os.Getenv("JWT_SECRET")

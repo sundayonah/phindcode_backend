@@ -45,14 +45,21 @@ func main() {
 	// Define version 1 API group
 	v1 := r.Group("/api/v1")
 	{
-		// Register the /login route for user login
-		v1.GET("/users", authHandler.GetAllUsers)
+		// Public Routes
 		v1.POST("/login", authHandler.LogIn)
 		v1.POST("/register", authHandler.Register)
 
-		// Apply middleware to other routes
+		// Protected routes
 		authorized := v1.Group("/")
-		authorized.Use(middleware.AuthMiddleware()) // Apply the auth middleware here for protected routes
+		authorized.Use(middleware.AuthMiddleware())
+
+		// Admin-only routes
+		admin := authorized.Group("/")
+		admin.Use(middleware.AdminMiddleware(authSvc))
+		{
+			admin.GET("/users", authHandler.GetAllUsers)
+			admin.POST("/create-admin", authHandler.CreateAdmin)
+		}
 
 		// Post routes
 		posts := authorized.Group("/posts")

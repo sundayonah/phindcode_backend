@@ -99,6 +99,7 @@ var (
 		{Name: "password", Type: field.TypeString, Nullable: true},
 		{Name: "token", Type: field.TypeString, Nullable: true},
 		{Name: "full_name", Type: field.TypeString, Nullable: true},
+		{Name: "is_admin", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

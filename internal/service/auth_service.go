@@ -14,6 +14,8 @@ type AuthService interface {
 	GetUserByEmail(ctx context.Context, email string) (*ent.User, error)
 	CreateUser(ctx context.Context, email, name, password string) (*ent.User, error)
 	FetchAllUsers(ctx context.Context) ([]*ent.User, error)
+	IsAdmin(ctx context.Context, userID int) (bool, error)
+	CreateAdminUser(ctx context.Context, email, name, password string) (*ent.User, error)
 }
 
 type authService struct {
@@ -68,4 +70,24 @@ func (s *authService) FetchAllUsers(ctx context.Context) ([]*ent.User, error) {
 	}
 
 	return users, nil
+}
+
+func (s *authService) IsAdmin(ctx context.Context, userID int) (bool, error) {
+	user, err := s.client.User.Get(ctx, userID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return false, errors.New("user not found")
+		}
+		return false, err
+	}
+	return user.IsAdmin, nil
+}
+
+func (s *authService) CreateAdminUser(ctx context.Context, email, fulname, password string) (*ent.User, error) {
+	return s.client.User.Create().
+		SetEmail(email).
+		SetFullName(fulname).
+		SetPassword(password).
+		SetIsAdmin(true).
+		Save(ctx)
 }

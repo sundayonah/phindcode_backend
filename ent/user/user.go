@@ -23,6 +23,8 @@ const (
 	FieldToken = "token"
 	// FieldFullName holds the string denoting the full_name field in the database.
 	FieldFullName = "full_name"
+	// FieldIsAdmin holds the string denoting the is_admin field in the database.
+	FieldIsAdmin = "is_admin"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -39,6 +41,7 @@ var Columns = []string{
 	FieldPassword,
 	FieldToken,
 	FieldFullName,
+	FieldIsAdmin,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -56,6 +59,8 @@ func ValidColumn(column string) bool {
 var (
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
+	// DefaultIsAdmin holds the default value on creation for the "is_admin" field.
+	DefaultIsAdmin bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -95,6 +100,11 @@ func ByToken(opts ...sql.OrderTermOption) OrderOption {
 // ByFullName orders the results by the full_name field.
 func ByFullName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFullName, opts...).ToFunc()
+}
+
+// ByIsAdmin orders the results by the is_admin field.
+func ByIsAdmin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsAdmin, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
