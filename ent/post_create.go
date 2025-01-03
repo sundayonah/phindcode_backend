@@ -10,7 +10,10 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/sundayonah/phindcode_backend/ent/comment"
+	"github.com/sundayonah/phindcode_backend/ent/like"
 	"github.com/sundayonah/phindcode_backend/ent/post"
+	"github.com/sundayonah/phindcode_backend/ent/share"
 )
 
 // PostCreate is the builder for creating a Post entity.
@@ -92,6 +95,51 @@ func (pc *PostCreate) SetNillableUpdatedAt(t *time.Time) *PostCreate {
 		pc.SetUpdatedAt(*t)
 	}
 	return pc
+}
+
+// AddLikeIDs adds the "likes" edge to the Like entity by IDs.
+func (pc *PostCreate) AddLikeIDs(ids ...int) *PostCreate {
+	pc.mutation.AddLikeIDs(ids...)
+	return pc
+}
+
+// AddLikes adds the "likes" edges to the Like entity.
+func (pc *PostCreate) AddLikes(l ...*Like) *PostCreate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return pc.AddLikeIDs(ids...)
+}
+
+// AddCommentIDs adds the "comments" edge to the Comment entity by IDs.
+func (pc *PostCreate) AddCommentIDs(ids ...int) *PostCreate {
+	pc.mutation.AddCommentIDs(ids...)
+	return pc
+}
+
+// AddComments adds the "comments" edges to the Comment entity.
+func (pc *PostCreate) AddComments(c ...*Comment) *PostCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return pc.AddCommentIDs(ids...)
+}
+
+// AddShareIDs adds the "shares" edge to the Share entity by IDs.
+func (pc *PostCreate) AddShareIDs(ids ...int) *PostCreate {
+	pc.mutation.AddShareIDs(ids...)
+	return pc
+}
+
+// AddShares adds the "shares" edges to the Share entity.
+func (pc *PostCreate) AddShares(s ...*Share) *PostCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pc.AddShareIDs(ids...)
 }
 
 // Mutation returns the PostMutation object of the builder.
@@ -224,6 +272,54 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(post.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := pc.mutation.LikesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.LikesTable,
+			Columns: []string{post.LikesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(like.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.CommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.CommentsTable,
+			Columns: []string{post.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.SharesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.SharesTable,
+			Columns: []string{post.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(share.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

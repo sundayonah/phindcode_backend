@@ -5,14 +5,48 @@ package ent
 import (
 	"time"
 
+	"github.com/sundayonah/phindcode_backend/ent/comment"
+	"github.com/sundayonah/phindcode_backend/ent/like"
 	"github.com/sundayonah/phindcode_backend/ent/post"
 	"github.com/sundayonah/phindcode_backend/ent/schema"
+	"github.com/sundayonah/phindcode_backend/ent/share"
+	"github.com/sundayonah/phindcode_backend/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	commentFields := schema.Comment{}.Fields()
+	_ = commentFields
+	// commentDescContent is the schema descriptor for content field.
+	commentDescContent := commentFields[0].Descriptor()
+	// comment.ContentValidator is a validator for the "content" field. It is called by the builders before save.
+	comment.ContentValidator = commentDescContent.Validators[0].(func(string) error)
+	// commentDescUserID is the schema descriptor for user_id field.
+	commentDescUserID := commentFields[1].Descriptor()
+	// comment.UserIDValidator is a validator for the "user_id" field. It is called by the builders before save.
+	comment.UserIDValidator = commentDescUserID.Validators[0].(func(string) error)
+	// commentDescCreatedAt is the schema descriptor for created_at field.
+	commentDescCreatedAt := commentFields[2].Descriptor()
+	// comment.DefaultCreatedAt holds the default value on creation for the created_at field.
+	comment.DefaultCreatedAt = commentDescCreatedAt.Default.(func() time.Time)
+	// commentDescUpdatedAt is the schema descriptor for updated_at field.
+	commentDescUpdatedAt := commentFields[3].Descriptor()
+	// comment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	comment.DefaultUpdatedAt = commentDescUpdatedAt.Default.(func() time.Time)
+	// comment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	comment.UpdateDefaultUpdatedAt = commentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	likeFields := schema.Like{}.Fields()
+	_ = likeFields
+	// likeDescUserID is the schema descriptor for user_id field.
+	likeDescUserID := likeFields[0].Descriptor()
+	// like.UserIDValidator is a validator for the "user_id" field. It is called by the builders before save.
+	like.UserIDValidator = likeDescUserID.Validators[0].(func(string) error)
+	// likeDescCreatedAt is the schema descriptor for created_at field.
+	likeDescCreatedAt := likeFields[1].Descriptor()
+	// like.DefaultCreatedAt holds the default value on creation for the created_at field.
+	like.DefaultCreatedAt = likeDescCreatedAt.Default.(func() time.Time)
 	postFields := schema.Post{}.Fields()
 	_ = postFields
 	// postDescDescription is the schema descriptor for description field.
@@ -37,4 +71,24 @@ func init() {
 	post.DefaultUpdatedAt = postDescUpdatedAt.Default.(func() time.Time)
 	// post.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	post.UpdateDefaultUpdatedAt = postDescUpdatedAt.UpdateDefault.(func() time.Time)
+	shareFields := schema.Share{}.Fields()
+	_ = shareFields
+	// shareDescUserID is the schema descriptor for user_id field.
+	shareDescUserID := shareFields[0].Descriptor()
+	// share.UserIDValidator is a validator for the "user_id" field. It is called by the builders before save.
+	share.UserIDValidator = shareDescUserID.Validators[0].(func(string) error)
+	// shareDescShareTo is the schema descriptor for share_to field.
+	shareDescShareTo := shareFields[1].Descriptor()
+	// share.ShareToValidator is a validator for the "share_to" field. It is called by the builders before save.
+	share.ShareToValidator = shareDescShareTo.Validators[0].(func(string) error)
+	// shareDescCreatedAt is the schema descriptor for created_at field.
+	shareDescCreatedAt := shareFields[2].Descriptor()
+	// share.DefaultCreatedAt holds the default value on creation for the created_at field.
+	share.DefaultCreatedAt = shareDescCreatedAt.Default.(func() time.Time)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescEmail is the schema descriptor for email field.
+	userDescEmail := userFields[0].Descriptor()
+	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
 }

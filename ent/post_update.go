@@ -11,8 +11,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/sundayonah/phindcode_backend/ent/comment"
+	"github.com/sundayonah/phindcode_backend/ent/like"
 	"github.com/sundayonah/phindcode_backend/ent/post"
 	"github.com/sundayonah/phindcode_backend/ent/predicate"
+	"github.com/sundayonah/phindcode_backend/ent/share"
 )
 
 // PostUpdate is the builder for updating Post entities.
@@ -130,9 +133,117 @@ func (pu *PostUpdate) SetUpdatedAt(t time.Time) *PostUpdate {
 	return pu
 }
 
+// AddLikeIDs adds the "likes" edge to the Like entity by IDs.
+func (pu *PostUpdate) AddLikeIDs(ids ...int) *PostUpdate {
+	pu.mutation.AddLikeIDs(ids...)
+	return pu
+}
+
+// AddLikes adds the "likes" edges to the Like entity.
+func (pu *PostUpdate) AddLikes(l ...*Like) *PostUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return pu.AddLikeIDs(ids...)
+}
+
+// AddCommentIDs adds the "comments" edge to the Comment entity by IDs.
+func (pu *PostUpdate) AddCommentIDs(ids ...int) *PostUpdate {
+	pu.mutation.AddCommentIDs(ids...)
+	return pu
+}
+
+// AddComments adds the "comments" edges to the Comment entity.
+func (pu *PostUpdate) AddComments(c ...*Comment) *PostUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return pu.AddCommentIDs(ids...)
+}
+
+// AddShareIDs adds the "shares" edge to the Share entity by IDs.
+func (pu *PostUpdate) AddShareIDs(ids ...int) *PostUpdate {
+	pu.mutation.AddShareIDs(ids...)
+	return pu
+}
+
+// AddShares adds the "shares" edges to the Share entity.
+func (pu *PostUpdate) AddShares(s ...*Share) *PostUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pu.AddShareIDs(ids...)
+}
+
 // Mutation returns the PostMutation object of the builder.
 func (pu *PostUpdate) Mutation() *PostMutation {
 	return pu.mutation
+}
+
+// ClearLikes clears all "likes" edges to the Like entity.
+func (pu *PostUpdate) ClearLikes() *PostUpdate {
+	pu.mutation.ClearLikes()
+	return pu
+}
+
+// RemoveLikeIDs removes the "likes" edge to Like entities by IDs.
+func (pu *PostUpdate) RemoveLikeIDs(ids ...int) *PostUpdate {
+	pu.mutation.RemoveLikeIDs(ids...)
+	return pu
+}
+
+// RemoveLikes removes "likes" edges to Like entities.
+func (pu *PostUpdate) RemoveLikes(l ...*Like) *PostUpdate {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return pu.RemoveLikeIDs(ids...)
+}
+
+// ClearComments clears all "comments" edges to the Comment entity.
+func (pu *PostUpdate) ClearComments() *PostUpdate {
+	pu.mutation.ClearComments()
+	return pu
+}
+
+// RemoveCommentIDs removes the "comments" edge to Comment entities by IDs.
+func (pu *PostUpdate) RemoveCommentIDs(ids ...int) *PostUpdate {
+	pu.mutation.RemoveCommentIDs(ids...)
+	return pu
+}
+
+// RemoveComments removes "comments" edges to Comment entities.
+func (pu *PostUpdate) RemoveComments(c ...*Comment) *PostUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return pu.RemoveCommentIDs(ids...)
+}
+
+// ClearShares clears all "shares" edges to the Share entity.
+func (pu *PostUpdate) ClearShares() *PostUpdate {
+	pu.mutation.ClearShares()
+	return pu
+}
+
+// RemoveShareIDs removes the "shares" edge to Share entities by IDs.
+func (pu *PostUpdate) RemoveShareIDs(ids ...int) *PostUpdate {
+	pu.mutation.RemoveShareIDs(ids...)
+	return pu
+}
+
+// RemoveShares removes "shares" edges to Share entities.
+func (pu *PostUpdate) RemoveShares(s ...*Share) *PostUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pu.RemoveShareIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -229,6 +340,141 @@ func (pu *PostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.UpdatedAt(); ok {
 		_spec.SetField(post.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if pu.mutation.LikesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.LikesTable,
+			Columns: []string{post.LikesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(like.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedLikesIDs(); len(nodes) > 0 && !pu.mutation.LikesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.LikesTable,
+			Columns: []string{post.LikesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(like.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.LikesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.LikesTable,
+			Columns: []string{post.LikesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(like.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.CommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.CommentsTable,
+			Columns: []string{post.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !pu.mutation.CommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.CommentsTable,
+			Columns: []string{post.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.CommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.CommentsTable,
+			Columns: []string{post.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.SharesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.SharesTable,
+			Columns: []string{post.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(share.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedSharesIDs(); len(nodes) > 0 && !pu.mutation.SharesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.SharesTable,
+			Columns: []string{post.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(share.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.SharesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.SharesTable,
+			Columns: []string{post.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(share.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -352,9 +598,117 @@ func (puo *PostUpdateOne) SetUpdatedAt(t time.Time) *PostUpdateOne {
 	return puo
 }
 
+// AddLikeIDs adds the "likes" edge to the Like entity by IDs.
+func (puo *PostUpdateOne) AddLikeIDs(ids ...int) *PostUpdateOne {
+	puo.mutation.AddLikeIDs(ids...)
+	return puo
+}
+
+// AddLikes adds the "likes" edges to the Like entity.
+func (puo *PostUpdateOne) AddLikes(l ...*Like) *PostUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return puo.AddLikeIDs(ids...)
+}
+
+// AddCommentIDs adds the "comments" edge to the Comment entity by IDs.
+func (puo *PostUpdateOne) AddCommentIDs(ids ...int) *PostUpdateOne {
+	puo.mutation.AddCommentIDs(ids...)
+	return puo
+}
+
+// AddComments adds the "comments" edges to the Comment entity.
+func (puo *PostUpdateOne) AddComments(c ...*Comment) *PostUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return puo.AddCommentIDs(ids...)
+}
+
+// AddShareIDs adds the "shares" edge to the Share entity by IDs.
+func (puo *PostUpdateOne) AddShareIDs(ids ...int) *PostUpdateOne {
+	puo.mutation.AddShareIDs(ids...)
+	return puo
+}
+
+// AddShares adds the "shares" edges to the Share entity.
+func (puo *PostUpdateOne) AddShares(s ...*Share) *PostUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return puo.AddShareIDs(ids...)
+}
+
 // Mutation returns the PostMutation object of the builder.
 func (puo *PostUpdateOne) Mutation() *PostMutation {
 	return puo.mutation
+}
+
+// ClearLikes clears all "likes" edges to the Like entity.
+func (puo *PostUpdateOne) ClearLikes() *PostUpdateOne {
+	puo.mutation.ClearLikes()
+	return puo
+}
+
+// RemoveLikeIDs removes the "likes" edge to Like entities by IDs.
+func (puo *PostUpdateOne) RemoveLikeIDs(ids ...int) *PostUpdateOne {
+	puo.mutation.RemoveLikeIDs(ids...)
+	return puo
+}
+
+// RemoveLikes removes "likes" edges to Like entities.
+func (puo *PostUpdateOne) RemoveLikes(l ...*Like) *PostUpdateOne {
+	ids := make([]int, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return puo.RemoveLikeIDs(ids...)
+}
+
+// ClearComments clears all "comments" edges to the Comment entity.
+func (puo *PostUpdateOne) ClearComments() *PostUpdateOne {
+	puo.mutation.ClearComments()
+	return puo
+}
+
+// RemoveCommentIDs removes the "comments" edge to Comment entities by IDs.
+func (puo *PostUpdateOne) RemoveCommentIDs(ids ...int) *PostUpdateOne {
+	puo.mutation.RemoveCommentIDs(ids...)
+	return puo
+}
+
+// RemoveComments removes "comments" edges to Comment entities.
+func (puo *PostUpdateOne) RemoveComments(c ...*Comment) *PostUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return puo.RemoveCommentIDs(ids...)
+}
+
+// ClearShares clears all "shares" edges to the Share entity.
+func (puo *PostUpdateOne) ClearShares() *PostUpdateOne {
+	puo.mutation.ClearShares()
+	return puo
+}
+
+// RemoveShareIDs removes the "shares" edge to Share entities by IDs.
+func (puo *PostUpdateOne) RemoveShareIDs(ids ...int) *PostUpdateOne {
+	puo.mutation.RemoveShareIDs(ids...)
+	return puo
+}
+
+// RemoveShares removes "shares" edges to Share entities.
+func (puo *PostUpdateOne) RemoveShares(s ...*Share) *PostUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return puo.RemoveShareIDs(ids...)
 }
 
 // Where appends a list predicates to the PostUpdate builder.
@@ -481,6 +835,141 @@ func (puo *PostUpdateOne) sqlSave(ctx context.Context) (_node *Post, err error) 
 	}
 	if value, ok := puo.mutation.UpdatedAt(); ok {
 		_spec.SetField(post.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if puo.mutation.LikesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.LikesTable,
+			Columns: []string{post.LikesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(like.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedLikesIDs(); len(nodes) > 0 && !puo.mutation.LikesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.LikesTable,
+			Columns: []string{post.LikesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(like.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.LikesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.LikesTable,
+			Columns: []string{post.LikesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(like.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.CommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.CommentsTable,
+			Columns: []string{post.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !puo.mutation.CommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.CommentsTable,
+			Columns: []string{post.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.CommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.CommentsTable,
+			Columns: []string{post.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.SharesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.SharesTable,
+			Columns: []string{post.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(share.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedSharesIDs(); len(nodes) > 0 && !puo.mutation.SharesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.SharesTable,
+			Columns: []string{post.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(share.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.SharesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   post.SharesTable,
+			Columns: []string{post.SharesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(share.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Post{config: puo.config}
 	_spec.Assign = _node.assignValues

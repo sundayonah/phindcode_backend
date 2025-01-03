@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -27,8 +28,35 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeLikes holds the string denoting the likes edge name in mutations.
+	EdgeLikes = "likes"
+	// EdgeComments holds the string denoting the comments edge name in mutations.
+	EdgeComments = "comments"
+	// EdgeShares holds the string denoting the shares edge name in mutations.
+	EdgeShares = "shares"
 	// Table holds the table name of the post in the database.
 	Table = "posts"
+	// LikesTable is the table that holds the likes relation/edge.
+	LikesTable = "likes"
+	// LikesInverseTable is the table name for the Like entity.
+	// It exists in this package in order to avoid circular dependency with the "like" package.
+	LikesInverseTable = "likes"
+	// LikesColumn is the table column denoting the likes relation/edge.
+	LikesColumn = "post_likes"
+	// CommentsTable is the table that holds the comments relation/edge.
+	CommentsTable = "comments"
+	// CommentsInverseTable is the table name for the Comment entity.
+	// It exists in this package in order to avoid circular dependency with the "comment" package.
+	CommentsInverseTable = "comments"
+	// CommentsColumn is the table column denoting the comments relation/edge.
+	CommentsColumn = "post_comments"
+	// SharesTable is the table that holds the shares relation/edge.
+	SharesTable = "shares"
+	// SharesInverseTable is the table name for the Share entity.
+	// It exists in this package in order to avoid circular dependency with the "share" package.
+	SharesInverseTable = "shares"
+	// SharesColumn is the table column denoting the shares relation/edge.
+	SharesColumn = "post_shares"
 )
 
 // Columns holds all SQL columns for post fields.
@@ -109,4 +137,67 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByLikesCount orders the results by likes count.
+func ByLikesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLikesStep(), opts...)
+	}
+}
+
+// ByLikes orders the results by likes terms.
+func ByLikes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLikesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCommentsCount orders the results by comments count.
+func ByCommentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCommentsStep(), opts...)
+	}
+}
+
+// ByComments orders the results by comments terms.
+func ByComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCommentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySharesCount orders the results by shares count.
+func BySharesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSharesStep(), opts...)
+	}
+}
+
+// ByShares orders the results by shares terms.
+func ByShares(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSharesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newLikesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LikesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, LikesTable, LikesColumn),
+	)
+}
+func newCommentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CommentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, CommentsTable, CommentsColumn),
+	)
+}
+func newSharesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SharesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SharesTable, SharesColumn),
+	)
 }

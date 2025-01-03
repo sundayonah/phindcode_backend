@@ -33,6 +33,9 @@ func main() {
 	// Middleware
 	r.Use(middleware.AuthMiddleware())
 
+	socialSvc := service.NewSocialService(client)
+	socialHandler := handlers.NewSocialHandler(socialSvc)
+
 	// Routes
 	v1 := r.Group("/api/v1")
 	{
@@ -43,6 +46,8 @@ func main() {
 			posts.GET("/:id", handler.GetPost)
 			posts.PUT("/:id", handler.UpdatePost)
 			posts.DELETE("/:id", handler.DeletePost)
+
+			handlers.AddSocialRoutes(posts, socialHandler)
 		}
 	}
 

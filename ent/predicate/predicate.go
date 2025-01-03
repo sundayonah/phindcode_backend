@@ -6,5 +6,17 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Comment is the predicate function for comment builders.
+type Comment func(*sql.Selector)
+
+// Like is the predicate function for like builders.
+type Like func(*sql.Selector)
+
 // Post is the predicate function for post builders.
 type Post func(*sql.Selector)
+
+// Share is the predicate function for share builders.
+type Share func(*sql.Selector)
+
+// User is the predicate function for user builders.
+type User func(*sql.Selector)

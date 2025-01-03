@@ -17,7 +17,6 @@ func NewConfig() (*ent.Client, error) {
 	fmt.Println("Starting database connection")
 	// Load environment variables
 	connectionString := os.Getenv("DATABASE_URL")
-	fmt.Println("connection string: ", connectionString)
 	if connectionString == "" {
 		return nil, fmt.Errorf("database URL not found in environment variables")
 	}

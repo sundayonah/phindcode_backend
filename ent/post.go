@@ -30,8 +30,51 @@ type Post struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the PostQuery when eager-loading is set.
+	Edges        PostEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// PostEdges holds the relations/edges for other nodes in the graph.
+type PostEdges struct {
+	// Likes holds the value of the likes edge.
+	Likes []*Like `json:"likes,omitempty"`
+	// Comments holds the value of the comments edge.
+	Comments []*Comment `json:"comments,omitempty"`
+	// Shares holds the value of the shares edge.
+	Shares []*Share `json:"shares,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// LikesOrErr returns the Likes value or an error if the edge
+// was not loaded in eager-loading.
+func (e PostEdges) LikesOrErr() ([]*Like, error) {
+	if e.loadedTypes[0] {
+		return e.Likes, nil
+	}
+	return nil, &NotLoadedError{edge: "likes"}
+}
+
+// CommentsOrErr returns the Comments value or an error if the edge
+// was not loaded in eager-loading.
+func (e PostEdges) CommentsOrErr() ([]*Comment, error) {
+	if e.loadedTypes[1] {
+		return e.Comments, nil
+	}
+	return nil, &NotLoadedError{edge: "comments"}
+}
+
+// SharesOrErr returns the Shares value or an error if the edge
+// was not loaded in eager-loading.
+func (e PostEdges) SharesOrErr() ([]*Share, error) {
+	if e.loadedTypes[2] {
+		return e.Shares, nil
+	}
+	return nil, &NotLoadedError{edge: "shares"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -119,6 +162,21 @@ func (po *Post) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (po *Post) Value(name string) (ent.Value, error) {
 	return po.selectValues.Get(name)
+}
+
+// QueryLikes queries the "likes" edge of the Post entity.
+func (po *Post) QueryLikes() *LikeQuery {
+	return NewPostClient(po.config).QueryLikes(po)
+}
+
+// QueryComments queries the "comments" edge of the Post entity.
+func (po *Post) QueryComments() *CommentQuery {
+	return NewPostClient(po.config).QueryComments(po)
+}
+
+// QueryShares queries the "shares" edge of the Post entity.
+func (po *Post) QueryShares() *ShareQuery {
+	return NewPostClient(po.config).QueryShares(po)
 }
 
 // Update returns a builder for updating this Post.
