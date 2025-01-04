@@ -113,7 +113,7 @@ func (h *AuthHandler) handleEmailLogin(c *gin.Context, email, password string) (
 
 	userIDStr := strconv.Itoa(user.ID)
 
-	token, err := generateToken(user.Email, userIDStr)
+	token, err := generateToken(user.Email, userIDStr, user.IsAdmin)
 	if err != nil {
 		return "", "", err
 	}
@@ -156,7 +156,7 @@ func (h *AuthHandler) handleGoogleLogin(c *gin.Context, token string) (string, e
 
 	userIDStr := strconv.Itoa(user.ID)
 
-	return generateToken(user.Email, userIDStr)
+	return generateToken(user.Email, userIDStr, user.IsAdmin)
 }
 
 // handleEmailRegistration registers a new user with email and password and generates a JWT token
@@ -181,7 +181,7 @@ func (h *AuthHandler) handleEmailRegistration(c *gin.Context, email, password, n
 
 	userIDStr := strconv.Itoa(user.ID)
 
-	return generateToken(user.Email, userIDStr)
+	return generateToken(user.Email, userIDStr, user.IsAdmin)
 }
 
 // handleGoogleRegistration registers a new user with Google login and generates a JWT token
@@ -217,7 +217,7 @@ func (h *AuthHandler) handleGoogleRegistration(c *gin.Context, token string) (st
 
 	userIDStr := strconv.Itoa(user.ID)
 
-	return generateToken(user.Email, userIDStr)
+	return generateToken(user.Email, userIDStr, user.IsAdmin)
 }
 
 func (h *AuthHandler) CreateAdmin(c *gin.Context) {
@@ -253,8 +253,11 @@ func (h *AuthHandler) CreateAdmin(c *gin.Context) {
 		return
 	}
 
+	userIDStr := strconv.Itoa(user.ID)
+
 	// Generate JWT token
-	token, err := generateToken(user.Email, strconv.Itoa(user.ID))
+	token, err := generateToken(user.Email, userIDStr, user.IsAdmin)
+	// token, err := generateToken(user.Email, strconv.Itoa(user.ID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
@@ -268,38 +271,6 @@ func (h *AuthHandler) CreateAdmin(c *gin.Context) {
 			"name":  user.FullName,
 		},
 	})
-}
-
-// generateToken generates a JWT token for the user
-func generateToken(email, userID string) (string, error) {
-	secretKey := os.Getenv("JWT_SECRET")
-	if secretKey == "" {
-		return "", errors.New("JWT secret key is not set")
-	}
-
-	claims := jwt.MapClaims{
-		"email":  email,
-		"userID": userID,
-		"exp":    time.Now().Add(24 * time.Hour).Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secretKey))
-}
-
-// verifyGoogleToken verifies the Google ID token
-func verifyGoogleToken(c *gin.Context, token string) (*idtoken.Payload, error) {
-	ctx := c.Request.Context()
-	audience := os.Getenv("CLIENT_ID")
-	if audience == "" {
-		return nil, errors.New("CLIENT_ID environment variable is not set")
-	}
-
-	payload, err := idtoken.Validate(ctx, token, audience)
-	if err != nil {
-		return nil, err
-	}
-	return payload, nil
 }
 
 func (h *AuthHandler) GetAllUsers(c *gin.Context) {
@@ -322,4 +293,51 @@ func (h *AuthHandler) GetAllUsers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+func generateToken(email, userID string, isAdmin bool) (string, error) {
+	secretKey := os.Getenv("JWT_SECRET")
+	if secretKey == "" {
+		return "", errors.New("JWT secret key is not set")
+	}
+	claims := jwt.MapClaims{
+		"email":   email,
+		"userID":  userID,
+		"isAdmin": isAdmin,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secretKey))
+}
+
+// generateToken generates a JWT token for the user
+// func generateToken(email, userID string) (string, error) {
+// secretKey := os.Getenv("JWT_SECRET")
+// if secretKey == "" {
+// 	return "", errors.New("JWT secret key is not set")
+// }
+
+// 	claims := jwt.MapClaims{
+// 		"email":  email,
+// 		"userID": userID,
+// 		"exp":    time.Now().Add(24 * time.Hour).Unix(),
+// 	}
+
+// 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+// 	return token.SignedString([]byte(secretKey))
+// }
+
+// verifyGoogleToken verifies the Google ID token
+func verifyGoogleToken(c *gin.Context, token string) (*idtoken.Payload, error) {
+	ctx := c.Request.Context()
+	audience := os.Getenv("CLIENT_ID")
+	if audience == "" {
+		return nil, errors.New("CLIENT_ID environment variable is not set")
+	}
+
+	payload, err := idtoken.Validate(ctx, token, audience)
+	if err != nil {
+		return nil, err
+	}
+	return payload, nil
 }

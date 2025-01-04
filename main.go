@@ -48,6 +48,7 @@ func main() {
 		// Public Routes
 		v1.POST("/login", authHandler.LogIn)
 		v1.POST("/register", authHandler.Register)
+		v1.POST("/create-admin", authHandler.CreateAdmin)
 
 		// Protected routes
 		authorized := v1.Group("/")
@@ -58,7 +59,7 @@ func main() {
 		admin.Use(middleware.AdminMiddleware(authSvc))
 		{
 			admin.GET("/users", authHandler.GetAllUsers)
-			admin.POST("/create-admin", authHandler.CreateAdmin)
+			// admin.POST("/create-admin", authHandler.CreateAdmin)
 		}
 
 		// Post routes
